@@ -47,9 +47,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::refreshIcons()
 {
-    qDebug() << Q_FUNC_INFO;
+    QElapsedTimer timer;
+    timer.start();
+    statusBar()->clearMessage();
     deleteAllButtons();
     QList<QString> iconNames = m_theme.contextIcons(ui->cboContext->currentText());
+    ui->buttonsWidget->setUpdatesEnabled(false);
     for (int i = 0; i < iconNames.count(); ++i) {
         QToolButton *btn = new QToolButton(ui->buttonsWidget);
         btn->setFixedSize(32, 32);
@@ -57,12 +60,16 @@ void MainWindow::refreshIcons()
         QString name = iconNames[i];
         btn->setToolTip(name);
         btn->setIcon(m_theme.loadIcon(name));
+        connect(btn, &QToolButton::clicked, this, [=] { statusBar()->showMessage(btn->toolTip()); });
         ui->btnsGrid->addWidget(btn, i / 8, i % 8);
     }
     auto rows = iconNames.count() / 8;
     if (rows < 14) {
         ui->btnsGrid->setRowStretch(rows + 1, 1);
     }
+    ui->buttonsWidget->setUpdatesEnabled(true);
+    ui->buttonsWidget->update();
+    qDebug() << Q_FUNC_INFO << "elapsed time:" << timer.elapsed();
 }
 
 void MainWindow::styleChanged(const QString name)
@@ -91,11 +98,13 @@ void MainWindow::contextChanged(const QString name)
 
 void MainWindow::deleteAllButtons()
 {
-    qDebug() << Q_FUNC_INFO;
+    QElapsedTimer timer;
+    timer.start();
     ui->buttonsWidget->setUpdatesEnabled(false);
     qDeleteAll(
         ui->buttonsWidget->findChildren<QToolButton *>(QString(), Qt::FindDirectChildrenOnly));
     ui->buttonsWidget->setUpdatesEnabled(true);
+    qDebug() << Q_FUNC_INFO << "elapsed time:" << timer.elapsed();
 }
 
 void MainWindow::darkModeChanged(const bool checked)

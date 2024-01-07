@@ -1,6 +1,7 @@
 #ifndef FREEDESKTOPTHEME_H
 #define FREEDESKTOPTHEME_H
 
+#include <QElapsedTimer>
 #include <QIcon>
 #include <QMap>
 #include <QObject>
@@ -17,12 +18,13 @@ public:
     QList<QString> themeNames() const;
     QList<QString> themeContexts() const;
     QList<QString> contextIcons(const QString &context) const;
+    QString dirContext(const QString &dirName) const;
     QString systemTheme() const;
     QString currentTheme() const;
     QMap<QString, QSet<QString>> iconNames() const;
     QMap<QString, QString> themes() const;
     QIcon loadIcon(const QString &iconName) const;
-    // void dumpTheme();
+    //void dumpTheme();
 
 protected:
     void loadThemes();
@@ -32,6 +34,7 @@ protected:
 private:
     QList<QString> m_themeNames;
     QList<QString> m_themeContexts;
+    QMap<QString, QSet<QString>> m_contextDirs; // [key=context]->paths
     QMap<QString, QString> m_themes; // [key=name]->path
     QMap<QString, QSet<QString>> m_iconNames; //[key=context]->{icon_name, ...}
     QList<QString> m_parents;
