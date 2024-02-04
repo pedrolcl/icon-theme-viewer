@@ -74,13 +74,11 @@ void MainWindow::refreshIcons()
 
 void MainWindow::styleChanged(const QString name)
 {
-    qDebug() << Q_FUNC_INFO << name;
     qApp->setStyle(name);
 }
 
 void MainWindow::themeChanged(const QString name)
 {
-    qDebug() << Q_FUNC_INFO << name;
     m_theme.changeTheme(name);
     ui->cboContext->clear();
     ui->cboContext->addItems(m_theme.themeContexts());
@@ -92,7 +90,6 @@ void MainWindow::themeChanged(const QString name)
 
 void MainWindow::contextChanged(const QString name)
 {
-    qDebug() << Q_FUNC_INFO << name;
     refreshIcons();
 }
 
@@ -111,6 +108,5 @@ void MainWindow::darkModeChanged(const bool checked)
 {
     static const QPalette dark(QColor(0x30, 0x30, 0x30));
     static const QPalette light(QColor(0xc0, 0xc0, 0xc0));
-    qDebug() << Q_FUNC_INFO;
     qApp->setPalette(checked ? dark : light);
 }

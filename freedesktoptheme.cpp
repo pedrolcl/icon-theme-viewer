@@ -21,6 +21,7 @@ FreedesktopTheme::FreedesktopTheme(QObject *parent)
 
 void FreedesktopTheme::loadThemes()
 {
+    using namespace Qt::Literals::StringLiterals;
     QElapsedTimer timer;
     timer.start();
     m_themes.clear();
@@ -30,25 +31,24 @@ void FreedesktopTheme::loadThemes()
         searchDir.setFilter(QDir::AllDirs | QDir::Drives | QDir::NoDotAndDotDot | QDir::Readable);
         searchDir.setSorting(QDir::NoSort);
         foreach (const auto entry, searchDir.entryInfoList()) {
-            if (QFile::exists(
-                    QDir(entry.canonicalFilePath()).absoluteFilePath(QStringLiteral("index.theme"))))
+            if (QFile::exists(QDir(entry.canonicalFilePath()).absoluteFilePath("index.theme"_L1))) {
                 m_themes.insert(entry.fileName(), entry.filePath());
+            }
         }
     }
     m_themeNames = m_themes.keys();
     m_themeNames.sort();
     m_themeNames.removeDuplicates();
-    qDebug() << Q_FUNC_INFO << "elapsed time:" << timer.elapsed();
 }
 
 void FreedesktopTheme::loadTheme()
 {
     using namespace Qt::Literals::StringLiterals;
+    QRegularExpression rex("\\d+.*\\d+");
     QElapsedTimer timer;
     timer.start();
     QFileInfo themeIndex;
-    const QList<QString> iconDirs = QIcon::themeSearchPaths();
-    foreach (const auto dirName, iconDirs) {
+    foreach (const auto dirName, QIcon::themeSearchPaths()) {
         QDir themeDir(dirName);
         themeDir.cd(currentTheme());
         themeIndex.setFile(themeDir, "index.theme"_L1);
@@ -63,7 +63,16 @@ void FreedesktopTheme::loadTheme()
             if (key.endsWith("/Context"_L1)) {
                 auto context = indexReader.value(key).toString().toLower();
                 m_themeContexts.append(context);
-                m_contextDirs[context].insert(key.left(key.indexOf('/')));
+                auto newKey = key;
+                newKey.remove("/Context"_L1);
+                auto dir1 = newKey.left(newKey.indexOf('/'));
+                QRegularExpressionMatch m = rex.match(dir1);
+                if (m.hasMatch() || dir1 == "scalable") {
+                    auto dir2 = newKey.last(newKey.length() - newKey.indexOf('/') - 1);
+                    m_contextDirs[context].insert(dir2);
+                } else {
+                    m_contextDirs[context].insert(dir1);
+                }
             }
         }
         m_parents = indexReader.value("Icon Theme/Inherits"_L1).toStringList();
@@ -72,7 +81,6 @@ void FreedesktopTheme::loadTheme()
         m_themeContexts.sort();
         m_themeContexts.removeDuplicates();
     }
-    qDebug() << Q_FUNC_INFO << "elapsed time:" << timer.elapsed();
 }
 
 void FreedesktopTheme::loadThemeIcons()
@@ -80,7 +88,7 @@ void FreedesktopTheme::loadThemeIcons()
     QElapsedTimer timer;
     timer.start();
     const auto themePath = m_themes[currentTheme()];
-    QRegularExpression rex(themePath + "/(.*)/.*");
+    QRegularExpression rex(themePath + "/(.*)/(.*)");
     QDir iconDir(themePath);
     iconDir.setFilter(QDir::Files | QDir::NoDotAndDotDot | QDir::Readable);
     iconDir.setSorting(QDir::Name);
@@ -93,6 +101,10 @@ void FreedesktopTheme::loadThemeIcons()
         if (match.hasMatch()) {
             dir = match.captured(1);
             context = dirContext(dir);
+            if (context.isEmpty()) {
+                dir = match.captured(2);
+                context = dirContext(dir);
+            }
         }
         if (!context.isEmpty() && QIcon::hasThemeIcon(iconName)) {
             if (m_iconNames[context].contains(iconName))
@@ -100,7 +112,6 @@ void FreedesktopTheme::loadThemeIcons()
             m_iconNames[context].insert(iconName);
         }
     }
-    qDebug() << Q_FUNC_INFO << "elapsed time:" << timer.elapsed();
 }
 
 void FreedesktopTheme::changeTheme(const QString themeName)
