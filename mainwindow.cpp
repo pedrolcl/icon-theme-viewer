@@ -47,29 +47,21 @@ MainWindow::~MainWindow()
 
 void MainWindow::refreshIcons()
 {
-    QElapsedTimer timer;
-    timer.start();
+    // QElapsedTimer timer;
+    // timer.start();
     statusBar()->clearMessage();
     deleteAllButtons();
+    QBrush brush = palette().window();
     QList<QString> iconNames = m_theme.contextIcons(ui->cboContext->currentText());
-    ui->buttonsWidget->setUpdatesEnabled(false);
     for (int i = 0; i < iconNames.count(); ++i) {
-        QToolButton *btn = new QToolButton(ui->buttonsWidget);
-        btn->setFixedSize(32, 32);
-        btn->setIconSize(QSize(32, 32));
         QString name = iconNames[i];
-        btn->setToolTip(name);
-        btn->setIcon(m_theme.loadIcon(name));
-        connect(btn, &QToolButton::clicked, this, [=] { statusBar()->showMessage(btn->toolTip()); });
-        ui->btnsGrid->addWidget(btn, i / 8, i % 8);
+        QListWidgetItem *item = new QListWidgetItem(ui->buttonsWidget);
+        item->setToolTip(name);
+        item->setIcon(m_theme.loadIcon(name));
+        item->setStatusTip(name);
+        item->setBackground(brush);
     }
-    auto rows = iconNames.count() / 8;
-    if (rows < 14) {
-        ui->btnsGrid->setRowStretch(rows + 1, 1);
-    }
-    ui->buttonsWidget->setUpdatesEnabled(true);
-    ui->buttonsWidget->update();
-    qDebug() << Q_FUNC_INFO << "elapsed time:" << timer.elapsed();
+    //qDebug() << Q_FUNC_INFO << "elapsed time:" << timer.elapsed();
 }
 
 void MainWindow::styleChanged(const QString name)
@@ -95,13 +87,10 @@ void MainWindow::contextChanged(const QString name)
 
 void MainWindow::deleteAllButtons()
 {
-    QElapsedTimer timer;
-    timer.start();
-    ui->buttonsWidget->setUpdatesEnabled(false);
-    qDeleteAll(
-        ui->buttonsWidget->findChildren<QToolButton *>(QString(), Qt::FindDirectChildrenOnly));
-    ui->buttonsWidget->setUpdatesEnabled(true);
-    qDebug() << Q_FUNC_INFO << "elapsed time:" << timer.elapsed();
+    // QElapsedTimer timer;
+    // timer.start();
+    ui->buttonsWidget->clear();
+    //qDebug() << Q_FUNC_INFO << "elapsed time:" << timer.elapsed();
 }
 
 void MainWindow::darkModeChanged(const bool checked)
@@ -109,4 +98,8 @@ void MainWindow::darkModeChanged(const bool checked)
     static const QPalette dark(QColor(0x30, 0x30, 0x30));
     static const QPalette light(QColor(0xc0, 0xc0, 0xc0));
     qApp->setPalette(checked ? dark : light);
+    QBrush brush = checked ? dark.window() : light.window();
+    for (int row = 0; row < ui->buttonsWidget->count(); row++) {
+        ui->buttonsWidget->item(row)->setBackground(brush);
+    }
 }
