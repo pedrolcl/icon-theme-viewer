@@ -1,3 +1,6 @@
+// Copyright (c) 2023-2024, Pedro López-Cabanillas
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #ifndef FREEDESKTOPTHEME_H
 #define FREEDESKTOPTHEME_H
 

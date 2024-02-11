@@ -1,3 +1,6 @@
+// Copyright (c) 2023-2024, Pedro López-Cabanillas
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #include <QDebug>
 #include <QDir>
 #include <QDirIterator>
@@ -164,7 +167,7 @@ QString FreedesktopTheme::systemTheme() const
     return m_systemTheme;
 }
 
-QStringList FreedesktopTheme::themeNames() const
+QList<QString> FreedesktopTheme::themeNames() const
 {
     return m_themeNames;
 }
